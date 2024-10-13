@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        td {
+            border: 1px solid #333;
+            padding: 0;
+        }
+
+        input {
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            font-size: 20px;
+            border: none;
+            outline: none;
+        }
+
+        .submit-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sudoku Solver</h1>
+        <table>
+            <tbody id="sudoku-grid">
+                <!-- Grid will be dynamically generated here -->
+            </tbody>
+        </table>
+        <button class="submit-btn" onclick="solveSudoku()">Solve</button>
+        <p class="error" id="error-message"></p>
+    </div>
+
+    <script>
+        // Create the 9x9 grid of input boxes
+        const grid = document.getElementById("sudoku-grid");
+        const gridSize = 9;
+        let sudoku = [];
+
+        for (let row = 0; row < gridSize; row++) {
+            let tr = document.createElement("tr");
+            let rowData = [];
+            for (let col = 0; col < gridSize; col++) {
+                let td = document.createElement("td");
+                let input = document.createElement("input");
+                input.type = "text";
+                input.maxLength = "1"; // Single digit input
+                input.id = `cell-${row}-${col}`;
+                td.appendChild(input);
+                tr.appendChild(td);
+                rowData.push(input);
+            }
+            grid.appendChild(tr);
+            sudoku.push(rowData);
+        }
+
+        // Helper function to check if placing the number is valid
+        function isValid(board, row, col, num) {
+            for (let x = 0; x < gridSize; x++) {
+                if (board[row][x] == num || board[x][col] == num || 
+                    board[3 * Math.floor(row / 3) + Math.floor(x / 3)][3 * Math.floor(col / 3) + x % 3] == num) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Sudoku solving algorithm using backtracking
+        function solve(board) {
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (board[row][col] == 0) {
+                        for (let num = 1; num <= gridSize; num++) {
+                            if (isValid(board, row, col, num)) {
+                                board[row][col] = num;
+                                if (solve(board)) return true;
+                                board[row][col] = 0; // Backtrack
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Collect the values from the grid, solve the Sudoku, and display the solution
+        function solveSudoku() {
+            let board = [];
+            for (let row = 0; row < gridSize; row++) {
+                let rowData = [];
+                for (let col = 0; col < gridSize; col++) {
+                    let value = sudoku[row][col].value;
+                    rowData.push(value ? parseInt(value) : 0);
+                }
+                board.push(rowData);
+            }
+
+            // Clear any previous error messages
+            document.getElementById("error-message").textContent = "";
+
+            if (solve(board)) {
+                // Display the solved Sudoku
+                for (let row = 0; row < gridSize; row++) {
+                    for (let col = 0; col < gridSize; col++) {
+                        sudoku[row][col].value = board[row][col];
+                    }
+                }
+            } else {
+                document.getElementById("error-message").textContent = "No solution exists for the given Sudoku.";
+            }
+        }
+    </script>
+</body>
+</html>
